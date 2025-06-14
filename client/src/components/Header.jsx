@@ -6,7 +6,7 @@ const Header = () => {
     <div className='flex items-center justify-between max-sm:flex-col-reverse gap-y-10 px-4 mt-10 lg:px-44 sm:mt-20'>
 
       {/* left side */}
-      <div className="flex flex-col gap-4">
+      <div className="px-4 flex flex-col gap-4">
 
         <h1 className="text-4xl xl:text-5xl 2xl:text-6xl font-bold text-neutral-700 leading-tight">
           Remove the <br className='max-md:hidden' />
