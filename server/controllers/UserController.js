@@ -1,6 +1,4 @@
-import pkg from 'svix';
-const { Webhook } = pkg;
-
+import { Webhook } from "svix";
 import userModel from '../models/UserModel.js';
 
 // API Controller Function to Manage Clerk User with database
@@ -60,4 +58,24 @@ const clerkWebhooks = async (req, res) => {
   }
 };
 
-export { clerkWebhooks };
+
+
+
+// API Controller Function to Get User Credits
+
+const userCredits = async (req, res) => {
+   try{
+
+    const { clerkId } = req.body;
+    const userData = await userModel.findOne({clerkId})
+
+    res.json({success: true, credits:userData.creditBalance});
+   }
+
+   catch(error){
+    console.log(error.message);
+    res.status(400).json({ success: false, message: error.message });
+   }
+}
+
+export { clerkWebhooks, userCredits };
