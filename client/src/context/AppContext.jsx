@@ -3,6 +3,7 @@ import { createContext, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+// import { set } from "mongoose";
 
 export const AppContext = createContext();
 
@@ -47,6 +48,26 @@ const AppContextProvider = ({ children }) => {
 
        navigate('/result')
 
+       const token = await getToken()
+       
+       const formData = new FormData()
+       image && formData.append('image', image)
+       
+       const {data} = await axios.post(backendUrl + '/api/image/remove-bg', formData, {headers:{token}})
+
+       if(data.success){
+        setResultImage(data.resultImage)
+        data.creditBalance && setCredit(data.creditBalance)
+       }
+
+       else {
+        toast.error(data.message)
+        data.creditBalance && setCredit(data.creditBalance)
+        if(data.creditBalance === 0){
+          navigate('/buy')
+        }
+       }
+
        
     } 
     catch (error) {
@@ -61,7 +82,8 @@ const AppContextProvider = ({ children }) => {
     loadCreditsData,
     backendUrl,
     image,setImage,
-    removeBg
+    removeBg,
+    resultImage, setResultImage
   };
 
   return (
