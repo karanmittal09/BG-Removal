@@ -2,15 +2,16 @@
   "name": "server",
   "version": "1.0.0",
   "main": "server.js",
-  "type": "module", 
+  "type": "module",
   "scripts": {
     "start": "node server.js",
-    "server" : "nodemon server.js"
+    "server": "nodemon server.js"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@clerk/backend": "^2.1.0",
     "axios": "^1.10.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",

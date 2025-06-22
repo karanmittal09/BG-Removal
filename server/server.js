@@ -1,29 +1,22 @@
-import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
-import connectDB from './configs/mongodb.js';
-import userRouter from './routes/userRoutes.js';
-import imageRouter from './routes/imageRoutes.js';
+import "dotenv/config";
+import express from "express";
+import cors from "cors";
+import connectDB from "./configs/mongodb.js";
+import useRouter from "./routes/userRoutes.js";
+import imageRouter from './routes/imageRoutes.js'; 
 
-//App configs
+// App Config
 const PORT = process.env.PORT || 4000;
 const app = express();
+await connectDB();
 
-(async () => {
-	await connectDB();
-})();
-
-
-// Initialize Middlewares
+// Initialized Middlewares
 app.use(express.json());
 app.use(cors());
 
-//Api routes
+// API Routes
+app.get("/", (req, res) => res.send("API is working"));
+app.use("/api/user", useRouter);
+app.use("/api/image", imageRouter);
 
-app.get('/', (req, res) => res.send("API Working"));
-app.use('/api/user', userRouter);
-app.use('/api/image', imageRouter)
-
-// Start the server     
-
-app.listen(PORT, () => console.log("Server Running on port " + PORT));
+app.listen(PORT, () => console.log("Server running on port: ", PORT));
