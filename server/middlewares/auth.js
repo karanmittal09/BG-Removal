@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import userModel from "../models/UserModel.js";
+import dotenv from "dotenv";
 
 // Middleware to authenticate and attach user to request
 const authUser = async (req, res, next) => {
@@ -26,7 +27,7 @@ const authUser = async (req, res, next) => {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    req.user = user; // ✅ set user on request
+    req.user = user; 
     next();
   } catch (error) {
     console.error("Auth Error:", error.message);

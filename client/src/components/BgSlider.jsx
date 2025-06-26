@@ -9,7 +9,7 @@ const BgSlider = () => {
   }
 
   return (
-    <div pb-10 md:py-20 mx-2>
+    <div className="pb-10 md:py-20 mx-2">
   
       {/* title */}
 

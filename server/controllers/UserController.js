@@ -1,9 +1,10 @@
 import { Webhook } from "svix";
-import userModel from "../models/userModel.js";
+import userModel from "../models/UserModel.js";
 import transactionModel from "../models/transactionModel.js";
 import Razorpay from "razorpay";
 
 // API Controller Function to Manage Clerk User with database
+// http://localhost:4000/api/user/webhooks
 // http://localhost:4000/api/user/webhooks
 const clerkWebhooks = async (req, res) => {
   try {
@@ -31,6 +32,7 @@ const clerkWebhooks = async (req, res) => {
         res.json({});
         break;
       }
+
       case "user.updated": {
         const userData = {
           email: data.email_addresses[0].email_address,
