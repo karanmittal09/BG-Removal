@@ -22,11 +22,9 @@ const AppContextProvider = ({ children }) => {
   // Wrapped in useCallback to prevent recreation on every render
   const loadCreditsData = useCallback(async () => {
     try {
-      console.log("🔄 Loading credits data...");
       const token = await getToken();
-      
+
       if (!token) {
-        console.log("❌ No token available");
         return;
       }
 
@@ -35,17 +33,15 @@ const AppContextProvider = ({ children }) => {
       });
 
       if (data.success) {
-        console.log("✅ Credits loaded:", data.credits);
         setCredit(data.credits);
       } else {
-        console.log("❌ Credits load failed, keeping default credits");
         // Keep the default 5 credits if API fails to load user credits
         toast.error(data.message || "Failed to load credits");
       }
     } catch (error) {
-      console.error("❌ Credit Fetch Error:", error);
+      console.error("Credit Fetch Error:", error);
       if (error.response?.status === 401) {
-        console.log("Authentication error - user might need to sign in again");
+        // Authentication error - user might need to sign in again
       }
       toast.error(error.response?.data?.message || error.message || "Failed to load credits");
     }
@@ -55,6 +51,13 @@ const AppContextProvider = ({ children }) => {
     try {
       if (!isSignedIn) {
         return openSignIn();
+      }
+
+      // Check if user has credits before processing
+      if (credit <= 0) {
+        toast.error("You don't have enough credits. Please purchase more credits to continue.");
+        navigate("/buy");
+        return;
       }
 
       setImage(image);
@@ -86,23 +89,38 @@ const AppContextProvider = ({ children }) => {
         }
       } else {
         toast.error(data.message);
-        // Still update credits even if image processing failed
-        if (data.creditBalance !== undefined) {
-          setCredit(data.creditBalance);
-        }
-        if (data.creditBalance === 0 || credit <= 1) {
-          navigate("/buy");
+        // Handle specific error cases
+        if (data.message === "Credit Balance is zero" || data.creditBalance === 0) {
+          setCredit(0);
+          toast.error("You've run out of credits. Redirecting to purchase page...");
+          setTimeout(() => {
+            navigate("/buy");
+          }, 2000);
+        } else {
+          // Still update credits if provided
+          if (data.creditBalance !== undefined) {
+            setCredit(data.creditBalance);
+          }
         }
       }
     } catch (error) {
       console.error(error);
-      toast.error(error.message);
+
+      // Handle specific HTTP error responses
+      if (error.response?.status === 403 && error.response?.data?.message === "Credit Balance is zero") {
+        setCredit(0);
+        toast.error("You've run out of credits. Redirecting to purchase page...");
+        setTimeout(() => {
+          navigate("/buy");
+        }, 2000);
+      } else {
+        toast.error(error.response?.data?.message || error.message || "Failed to process image");
+      }
     }
   };
 
   // Load credits when user signs in
   useEffect(() => {
-    console.log("AppContext useEffect - isSignedIn:", isSignedIn);
     if (isSignedIn) {
       loadCreditsData();
     } else {
@@ -110,6 +128,22 @@ const AppContextProvider = ({ children }) => {
       setCredit(5);
     }
   }, [isSignedIn, loadCreditsData]);
+
+  // Function to check if user has credits and redirect if not
+  const checkCreditsAndRedirect = () => {
+    if (!isSignedIn) {
+      openSignIn();
+      return false;
+    }
+
+    if (credit <= 0) {
+      toast.error("You don't have enough credits. Please purchase more credits to continue.");
+      navigate("/buy");
+      return false;
+    }
+
+    return true;
+  };
 
   const value = {
     credit,
@@ -121,6 +155,7 @@ const AppContextProvider = ({ children }) => {
     removeBg,
     resultImage,
     setResultImage,
+    checkCreditsAndRedirect,
   };
 
   return (

@@ -11,8 +11,6 @@ const Navbar = () => {
 
   const navigate = useNavigate();
 
-   console.log("Credit value in Navbar:", credit, typeof credit);
-
   return (
     <div className="flex items-center justify-between mx-4 py-3 lg:mx-44">
       <Link to={"/"}>
@@ -22,11 +20,18 @@ const Navbar = () => {
         <div className="flex flex-wrap gap-2 sm:gap-3">
           <button
             onClick={() => navigate("/buy")}
-            className="flex justify-center items-center gap-2 sm:gap-3 px-4 sm:px-7 py-2.5 bg-blue-100 rounded-full hover:scale-105 transition-all duration-700"
+            className={`flex justify-center items-center gap-2 sm:gap-3 px-4 sm:px-7 py-2.5 rounded-full hover:scale-105 transition-all duration-700 ${
+              credit <= 0
+                ? 'bg-red-100 border-2 border-red-300 animate-pulse'
+                : 'bg-blue-100'
+            }`}
           >
             <img className="w-5" src={assets.credit_icon} alt="" />
-            <p className="text-xs sm:text-sm font-medium text-gray-600">
+            <p className={`text-xs sm:text-sm font-medium ${
+              credit <= 0 ? 'text-red-600' : 'text-gray-600'
+            }`}>
               Credits: {credit}
+              {credit <= 0 && <span className="ml-1 text-red-500">⚠️</span>}
             </p>
           </button>
           <h1 className="flex items-center text-gray-600 max-sm:hidden">

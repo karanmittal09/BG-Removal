@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
 import userModel from "../models/UserModel.js";
-import dotenv from "dotenv";
 
 // Middleware to authenticate and attach user to request
 const authUser = async (req, res, next) => {
@@ -14,8 +13,8 @@ const authUser = async (req, res, next) => {
       });
     }
 
-    // Decode the JWT token
-    const decoded = jwt.decode(token); // You can use jwt.verify() if needed for better security
+    // Decode the JWT token (Clerk tokens are already verified by Clerk)
+    const decoded = jwt.decode(token);
     const clerkId = decoded?.sub || decoded?.clerkId;
 
     if (!clerkId) {

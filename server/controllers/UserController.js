@@ -14,7 +14,7 @@ const clerkWebhooks = async (req, res) => {
     };
 
     const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
-    const evt = whook.verify(payload, headers);
+    whook.verify(payload, headers);
     const { data, type } = JSON.parse(payload.toString());
 
     switch (type) {
@@ -64,7 +64,7 @@ const userCredits = async (req, res) => {
     }
 
     // Use the user data directly from middleware
-    res.json({ success: true, userCredits: req.user.creditBalance });
+    res.json({ success: true, credits: req.user.creditBalance });
   } catch (error) {
     console.log("error :>> ", error.message);
     res.json({ success: false, message: error.message });
@@ -88,7 +88,6 @@ const paymentRazorpay = async (req, res) => {
     }
 
     const clerkId = req.user.clerkId;
-    const userData = req.user; // Use user data from middleware
 
     if (!planId) {
       return res.json({ success: false, message: "Plan ID is required" });
