@@ -14,7 +14,12 @@ await connectDB();
 
 // Middlewares
 app.use(cors());
-app.use(express.json()); // For JSON routes (everything except Clerk webhooks)
+
+// Raw body parser for Clerk webhooks (MUST come before express.json())
+app.use('/api/user/webhooks', express.raw({ type: 'application/json' }));
+
+// JSON parser for all other routes
+app.use(express.json());
 
 // Routes
 app.get("/", (req, res) => res.send("API is working"));
