@@ -6,7 +6,7 @@ import Razorpay from "razorpay";
 // ✅ Clerk Webhook Handler — expects raw buffer
 const clerkWebhooks = async (req, res) => {
   try {
-    const payload = req.body; // raw Buffer
+    const payload = req.user; // raw Buffer
     const headers = {
       "svix-id": req.headers["svix-id"],
       "svix-timestamp": req.headers["svix-timestamp"],
@@ -22,7 +22,7 @@ const clerkWebhooks = async (req, res) => {
         const userData = {
           clerkId: data.id,
           email: data.email_addresses[0].email_address,
-          firstName: data.first_name,
+          firstname: data.first_name,
           lastname: data.last_name,
           photo: data.image_url,
         };
@@ -33,7 +33,7 @@ const clerkWebhooks = async (req, res) => {
       case "user.updated": {
         const userData = {
           email: data.email_addresses[0].email_address,
-          firstName: data.first_name,
+          firstname: data.first_name,
           lastname: data.last_name,
           photo: data.image_url,
         };
@@ -50,7 +50,7 @@ const clerkWebhooks = async (req, res) => {
         return res.status(400).json({ success: false, message: "Unhandled event type" });
     }
   } catch (error) {
-    console.error("❌ Clerk webhook error:", error.message);
+    console.error(" Clerk webhook error:", error.message);
     return res.status(400).json({ success: false, message: error.message });
   }
 };
