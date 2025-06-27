@@ -6,9 +6,7 @@ import Razorpay from "razorpay";
 // ✅ Clerk Webhook Handler — expects raw buffer
 const clerkWebhooks = async (req, res) => {
   try {
-    const payload = req.body; 
-    console.log("🔄 Webhook received, payload type:", typeof payload);
-    
+    const payload = req.body; // raw Buffer
     const headers = {
       "svix-id": req.headers["svix-id"],
       "svix-timestamp": req.headers["svix-timestamp"],
@@ -18,9 +16,6 @@ const clerkWebhooks = async (req, res) => {
     const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
     const evt = whook.verify(payload, headers);
     const { data, type } = JSON.parse(payload.toString());
-    
-    console.log("📋 Event type:", type);
-    console.log("👤 User data ID:", data.id);
 
     switch (type) {
       case "user.created": {
@@ -31,9 +26,7 @@ const clerkWebhooks = async (req, res) => {
           lastname: data.last_name,
           photo: data.image_url,
         };
-        console.log("📝 Creating user with data:", userData);
-        const newUser = await userModel.create(userData);
-        console.log("✅ User created successfully:", newUser._id);
+        await userModel.create(userData);
         return res.json({ success: true });
       }
 
@@ -44,15 +37,12 @@ const clerkWebhooks = async (req, res) => {
           lastname: data.last_name,
           photo: data.image_url,
         };
-        console.log("📝 Updating user:", data.id);
         await userModel.findOneAndUpdate({ clerkId: data.id }, userData);
-        console.log("✅ User updated successfully");
         return res.json({ success: true });
       }
 
       case "user.deleted": {
         await userModel.findOneAndDelete({ clerkId: data.id });
-        console.log("🗑 User deleted successfully");
         return res.json({ success: true });
       }
 
@@ -60,8 +50,7 @@ const clerkWebhooks = async (req, res) => {
         return res.status(400).json({ success: false, message: "Unhandled event type" });
     }
   } catch (error) {
-    console.error("❌ Clerk webhook error:", error.message);
-    console.error("❌ Full error:", error);
+    console.error(" Clerk webhook error:", error.message);
     return res.status(400).json({ success: false, message: error.message });
   }
 };
@@ -69,8 +58,9 @@ const clerkWebhooks = async (req, res) => {
 // ✅ Get User Credits
 const userCredits = async (req, res) => {
   try {
-    const user = req.user;
-    res.json({ success: true, credits: user.creditBalance });
+    const { clerkId } = req.body;
+    const userData = await userModel.findOne({ clerkId });
+    res.json({ success: true, userCredits: userData.creditBalance });
   } catch (error) {
     console.log("error :>> ", error.message);
     res.json({ success: false, message: error.message });
