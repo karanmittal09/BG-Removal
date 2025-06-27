@@ -1,21 +1,17 @@
 import { useClerk, UserButton, useUser } from "@clerk/clerk-react";
 import { assets } from "../assets/assets";
 import { Link, useNavigate } from "react-router-dom";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { AppContext } from "../context/AppContext";
 
 const Navbar = () => {
   const { openSignIn } = useClerk();
   const { isSignedIn, user } = useUser();
-  const { credit, loadCreditsData } = useContext(AppContext);
+  const { credit } = useContext(AppContext);
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (isSignedIn) {
-      loadCreditsData();
-    }
-  }, [isSignedIn]);
+   console.log("Credit value in Navbar:", credit, typeof credit);
 
   return (
     <div className="flex items-center justify-between mx-4 py-3 lg:mx-44">
@@ -34,7 +30,7 @@ const Navbar = () => {
             </p>
           </button>
           <h1 className="flex items-center text-gray-600 max-sm:hidden">
-            Hi, {user.fullName}
+            Hi, {user?.fullName}
           </h1>
           <UserButton />
         </div>

@@ -1,5 +1,5 @@
 import { useAuth, useClerk, useUser } from "@clerk/clerk-react";
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 export const AppContext = createContext();
 
 const AppContextProvider = ({ children }) => {
-  const [credit, setCredit] = useState(5); // default 5 credits
+  const [credit, setCredit] = useState(5); // Default 5 credits for new users
   const [image, setImage] = useState(false);
   const [resultImage, setResultImage] = useState(false);
 
@@ -19,22 +19,37 @@ const AppContextProvider = ({ children }) => {
   const { isSignedIn } = useUser();
   const { openSignIn } = useClerk();
 
-  const loadCreditsData = async () => {
+  // Wrapped in useCallback to prevent recreation on every render
+  const loadCreditsData = useCallback(async () => {
     try {
+      console.log("🔄 Loading credits data...");
       const token = await getToken();
+      
+      if (!token) {
+        console.log("❌ No token available");
+        return;
+      }
+
       const { data } = await axios.get(`${backendUrl}/api/user/credits`, {
         headers: { token },
       });
 
       if (data.success) {
+        console.log("✅ Credits loaded:", data.credits);
         setCredit(data.credits);
-        console.log("Credits:", data.credits);
+      } else {
+        console.log("❌ Credits load failed, keeping default credits");
+        // Keep the default 5 credits if API fails to load user credits
+        toast.error(data.message || "Failed to load credits");
       }
     } catch (error) {
-      console.error("Credit Fetch Error:", error);
-      toast.error(error.message);
+      console.error("❌ Credit Fetch Error:", error);
+      if (error.response?.status === 401) {
+        console.log("Authentication error - user might need to sign in again");
+      }
+      toast.error(error.response?.data?.message || error.message || "Failed to load credits");
     }
-  };
+  }, [getToken, backendUrl]);
 
   const removeBg = async (image) => {
     try {
@@ -62,11 +77,20 @@ const AppContextProvider = ({ children }) => {
 
       if (data.success) {
         setResultImage(data.resultImage);
-        data.creditBalance && setCredit(data.creditBalance);
+        // Update credits after successful background removal
+        if (data.creditBalance !== undefined) {
+          setCredit(data.creditBalance);
+        } else {
+          // Fallback: reduce credit by 1 if backend doesn't return creditBalance
+          setCredit(prevCredit => Math.max(0, prevCredit - 1));
+        }
       } else {
         toast.error(data.message);
-        data.creditBalance && setCredit(data.creditBalance);
-        if (data.creditBalance === 0) {
+        // Still update credits even if image processing failed
+        if (data.creditBalance !== undefined) {
+          setCredit(data.creditBalance);
+        }
+        if (data.creditBalance === 0 || credit <= 1) {
           navigate("/buy");
         }
       }
@@ -76,12 +100,16 @@ const AppContextProvider = ({ children }) => {
     }
   };
 
-  // ✅ Automatically load credits on sign-in
+  // Load credits when user signs in
   useEffect(() => {
+    console.log("AppContext useEffect - isSignedIn:", isSignedIn);
     if (isSignedIn) {
       loadCreditsData();
+    } else {
+      // Set default credits for new/signed out users
+      setCredit(5);
     }
-  }, [isSignedIn]);
+  }, [isSignedIn, loadCreditsData]);
 
   const value = {
     credit,
